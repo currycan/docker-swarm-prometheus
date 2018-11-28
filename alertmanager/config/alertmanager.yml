@@ -7,7 +7,7 @@ global:
   smtp_smarthost: 'mail.fmsh.com.cn:25'
   smtp_from: 'fmshiotbuild@fmsh.com.cn'
   smtp_auth_username: 'fmshiotbuild'
-  smtp_auth_password: 'fmshiot112233'
+  smtp_auth_password: 'xxxxx'
   smtp_require_tls: false
 
 route:
