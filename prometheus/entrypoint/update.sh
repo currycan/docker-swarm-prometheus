@@ -46,6 +46,3 @@ fi
 if [ -f /etc/prometheus/pushgateway/scrape.json ];then
     sed -i 's@0000@9091@g' /etc/prometheus/pushgateway/scrape.json
 fi
-
-
-
