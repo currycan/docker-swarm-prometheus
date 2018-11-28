@@ -1,0 +1,80 @@
+:9090 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / prometheus:9090 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9093 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / alertmanager:9093 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9100 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / node-exporter:9100 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9323 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / dockerd-exporter:9323 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:8080 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / cadvisor:8080 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9080 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / unsee:9080 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9091 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / pushgateway:9091 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:3000 {
+    proxy / grafana:3000 {
+            transparent
+            websocket
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+

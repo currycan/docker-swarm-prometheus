@@ -1,0 +1,47 @@
+global:
+  resolve_timeout: 5m
+  # smtp_smarthost: 'localhost:25'
+  # smtp_smarthost: 'smtp.gmail.com:587'
+  # smtp_smarthost: 'smtp.163.com:25'
+  # smtp_smarthost:'smtp.exmail.qq.com:465'
+  smtp_smarthost: 'mail.fmsh.com.cn:25'
+  smtp_from: 'fmshiotbuild@fmsh.com.cn'
+  smtp_auth_username: 'fmshiotbuild'
+  smtp_auth_password: 'fmshiot112233'
+  smtp_require_tls: false
+
+route:
+  group_by: ['alertname']
+  group_wait: 5s # 组报警等待时间
+  group_interval: 5s # 组报警间隔时间
+  repeat_interval: <REPEAT> # 重复报警间隔时间
+  receiver: '<RECEIVER>' # 报警接收者
+
+templates:
+  - '/etc/alertmanager/template/wechat.tmpl'
+  - '/etc/alertmanager/template/email.tmpl'
+
+receivers:
+  - name: 'wechat'
+    wechat_configs:
+    - send_resolved: true
+      corp_id: '<CORP_ID>'
+      to_party: '<PARTY>'
+      agent_id: '<AGENT_ID>'
+      api_secret: '<AUTH_CODE>'
+      message: '{{ template "wechat.default.message" . }}'
+
+  - name: 'e-mail'
+    email_configs:
+    - send_resolved: true
+      to: '<EMAIL_USER>'
+      html: '{{ template "email.default.html" . }}'
+      headers: { Subject: " {{ .CommonAnnotations.summary }} " }
+
+  - name: 'slack'
+    slack_configs:
+      - send_resolved: true
+        text: "{{ .CommonAnnotations.description }}"
+        username: '<SLACK_USER>'
+        channel: '<SLACK_CHANNEL>'
+        api_url: '<SLACK_URL>'
