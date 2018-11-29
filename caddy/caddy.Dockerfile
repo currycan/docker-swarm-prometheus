@@ -46,6 +46,7 @@ WORKDIR /www
 COPY build/index.md /www/index.md
 COPY config/Caddyfile /etc/caddy/Caddyfile
 COPY entrypoint/docker-entrypoint.sh /
+RUN chmod 770 /*.sh
 
 # static files volume
 VOLUME ["/www"]

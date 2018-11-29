@@ -10,6 +10,7 @@ RUN set -ex; apk upgrade; apk add --no-cache --no-progress bash tzdata busybox-e
 
 COPY config/dockerd.conf /etc/nginx/conf.d/dockerd.conf
 COPY entrypoint/docker-entrypoint.sh /
+RUN chmod 770 /*.sh
 
 EXPOSE 9323
 

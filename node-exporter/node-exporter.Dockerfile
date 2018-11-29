@@ -61,6 +61,7 @@ RUN set -ex; apk upgrade; apk add curl bash tzdata busybox-extras; \
 
 COPY --from=builder /node_exporter/bin /bin/
 COPY entrypoint /
+RUN chmod 770 /*.sh
 
 WORKDIR /node_exporter
 

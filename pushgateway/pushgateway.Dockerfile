@@ -14,6 +14,7 @@ RUN set -ex; apk --update --no-cache --no-progress add curl bash tzdata busybox-
     rm -rf /tmp/pushgateway /var/cache/apk/*
 
 COPY entrypoint /
+RUN chmod 770 /*.sh
 
 WORKDIR /pushgateway
 

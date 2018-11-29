@@ -32,6 +32,7 @@ RUN set -ex; apk upgrade; apk add curl bash tzdata jq; \
 
 COPY config /etc/prometheus/
 COPY entrypoint /
+RUN chmod 770 /*.sh
 
 ENV WEAVE_TOKEN=none
 

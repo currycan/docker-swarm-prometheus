@@ -38,6 +38,7 @@ COPY config /grafana/config/
 COPY datasources /grafana/datasources/
 COPY dashboards /grafana/dashboards/
 COPY entrypoint /
+RUN chmod 770 /*.sh
 
 EXPOSE 3000
 

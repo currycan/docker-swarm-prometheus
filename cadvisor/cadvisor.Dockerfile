@@ -33,6 +33,7 @@ RUN set -ex; apk --update --no-cache --no-progress add bash tzdata busybox-extra
 # Grab cadvisor from the staging directory.
 COPY --from=builder /cadvisor/bin /bin/
 COPY entrypoint/docker-entrypoint.sh /
+RUN chmod 770 /*.sh
 
 WORKDIR /cadvisor
 

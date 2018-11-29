@@ -27,6 +27,7 @@ RUN set -ex; apk upgrade; apk add curl bash tzdata busybox-extras; \
 COPY config /etc/alertmanager/config
 COPY template /etc/alertmanager/template
 COPY entrypoint /
+RUN chmod 770 /*.sh
 
 WORKDIR /alertmanager
 
