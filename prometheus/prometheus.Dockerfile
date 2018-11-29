@@ -4,7 +4,7 @@ ENV WORK_DIR $GOPATH/src/github.com/prometheus
 
 WORKDIR $WORK_DIR
 
-RUN set -ex; apk update; apk add --no-cache make git; \
+RUN set -ex; apk update; apk add --no-cache curl make git; \
     git clone https://github.com/prometheus/prometheus.git; \
     cd prometheus; make build; \
     mkdir -p /prometheus/bin /prometheus/config; \
