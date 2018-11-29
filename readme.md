@@ -36,11 +36,11 @@ c、拉取exporter镜像
 docker pull harbor.iibu.com/base/cadvisor:v0.31.0
 docker pull harbor.iibu.com/base/node-exporter:v0.16.0
 docker pull harbor.iibu.com/base/dockerd-exporter:v0.0.1
-e、修改配置
+ ```
+d、修改配置
 ./prometheus/config 如需要监控rabbitmq，配置其IP端口
 ./docker-compose.yml 修改redis_exporter、mysqld_exporter 配置项
- ```
-d、主节点启动服务
+e、主节点启动服务
 在docker-compose.yml所在目录运行
 ```
 mkdir -p /monitor/grafana/data   
