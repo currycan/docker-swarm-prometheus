@@ -51,6 +51,30 @@ scrape_configs:
       - files:
           - /etc/prometheus/pushgateway/*.json
 
+  - job_name: 'rabbitmq-node0'
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['192.168.211.137:15672']
+        labels:
+          instance: 192.168.211.137
+          exporter: rabbitmq
+
+  - job_name: 'rabbitmq-node1'
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['192.168.211.171:15672']
+        labels:
+          instance: 192.168.211.171
+          exporter: rabbitmq
+
+  - job_name: 'rabbitmq-node2'
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['192.168.211.188:15672']
+        labels:
+          instance: 192.168.211.188
+          exporter: rabbitmq
+
   # - job_name: 'dockerd-exporter'
   #   dns_sd_configs:
   #   - names:
