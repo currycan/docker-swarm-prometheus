@@ -4,7 +4,7 @@ ENV WORK_DIR $GOPATH/src/github.com/prometheus
 
 WORKDIR $WORK_DIR
 
-RUN set -ex; apk update; apk add --no-cache make git; \
+RUN set -ex; apk update; apk add --no-cache make curl git; \
     git clone https://github.com/prometheus/alertmanager.git; \
     cd alertmanager; make build; \
     mkdir -p /alertmanager/bin /alertmanager/config; \
