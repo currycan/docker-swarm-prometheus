@@ -34,10 +34,10 @@ docker swarm join --token SWMTKN-1-69tr1fx5grwub5b7zi7qq4tq1crkddpurvf44kn3m57eb
 ```
 c、拉取exporter镜像
 比如监控主机需要监控redis,则需要在该主机上拉“harbor.iibu.com/base/redis_exporter:v0.22.1”，具体如下：
-manager节点：docker-compose pull
-worker节点：
-	redis主机：docker pull harbor.iibu.com/base/redis_exporter:v0.22.1
-	mariadb主机：docker pull harbor.iibu.com/base/mysqld_exporter:v0.11.0
+    manager节点：docker-compose pull
+    worker节点：
+        redis主机：docker pull harbor.iibu.com/base/redis_exporter:v0.22.1
+        mariadb主机：docker pull harbor.iibu.com/base/mysqld_exporter:v0.11.0
 d、主节点启动服务
 ```
 mkdir -p /monitor/grafana/data   
