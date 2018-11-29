@@ -7,8 +7,7 @@ RUN set -ex; apk upgrade; apk add curl bash tzdata ca-certificates; \
     ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime; \
     echo ${TZ} > /etc/timezone; \
     rm -rf /var/cache/apk/*; \
-    curl -o /bin/mysqld_exporter https://raw.githubusercontent.com/currycan/docker-swarm-prometheus
-/master/mysqld_exporter/mysqld_exporter; \
+    curl -o /bin/mysqld_exporter https://raw.githubusercontent.com/currycan/docker-swarm-prometheus/master/mysqld_exporter/mysqld_exporter; \
     chmod 770 /bin/mysqld_exporter
 
 WORKDIR /mysqld_exporter
