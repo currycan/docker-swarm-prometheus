@@ -1,7 +1,7 @@
 version: '3.3'
 services:
-  dockerd-exporter:
-    image: currycan/dockerd-exporter:v0.0.1
+  dockerd_exporter:
+    image: harbor.iibu.com/base/dockerd-exporter:v0.0.1
     volumes:
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
@@ -20,8 +20,8 @@ services:
           memory: 64M
 
   # monitor host
-  node-exporter:
-    image: currycan/node-exporter:v0.16.0
+  node_exporter:
+    image: harbor.iibu.com/base/node-exporter:v0.16.0
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -52,9 +52,8 @@ services:
           memory: 64M
 
   # monitor docker container
-  cadvisor:
-    image: currycan/cadvisor:v0.31.0
-    # hostname: '{{.Node.Hostname}}'
+  cadvisor_exporter:
+    image: harbor.iibu.com/base/cadvisor:v0.31.0
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -63,9 +62,6 @@ services:
       - /dev:/dev/:ro
       - /etc/hostname:/etc/nodename:ro
       - /etc/localtime:/etc/localtime:ro
-    environment:
-      - NODE_ID={{.Node.ID}}
-      - NODE_NAME={{.Node.Hostname}}
     command: -logtostderr -docker_only
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/metrics"]
@@ -82,9 +78,60 @@ services:
         reservations:
           memory: 64M
 
+  redis_exporter:
+    image: harbor.iibu.com/base/redis_exporter:v0.22.1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - REDIS_ADDR=192.168.211.168:6281,192.168.211.168:6381,192.168.211.184:6282,192.168.211.184:6382,192.168.211.199:6283,192.168.211.199:6383
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9121/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          # - node.labels.app == redis
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  mysqld_exporter:
+    image: harbor.iibu.com/base/mysqld_exporter:v0.11.0
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DATA_SOURCE_NAME="root:gULi4zT0Pyr@ghr!@(192.168.51.101:3306)/"      
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9104/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
   # push short-lived jobs
   pushgateway:
-    image: currycan/pushgateway:v0.6.0
+    image: harbor.iibu.com/base/pushgateway:v0.6.0
     volumes:
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
@@ -109,25 +156,29 @@ services:
 
   # datasource
   prometheus:
-    image: currycan/prometheus:v2.4.3
+    image: harbor.iibu.com/base/prometheus:v2.4.3
     user: root
     volumes:
       - /monitor/prometheus/data:/prometheus
       - /etc/localtime:/etc/localtime:ro
-      - /etc/hostname:/etc/nodename:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     configs:
       - source: node_rules
         target: /etc/prometheus/swarm_node.rules.yml
       - source: task_rules
         target: /etc/prometheus/swarm_task.rules.yml
+      - source: prometheus_config
+        target: /prometheus.yml
     environment:
-      - JOBS=pushgateway:9091
+      - exporters=prometheus node_exporter cadvisor_exporter dockerd_exporter redis_exporter mysqld_exporter pushgateway
+      - stack=monitor
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention=24h'
+      - '--web.enable-lifecycle'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9090/metrics"]
       interval: 5s
@@ -149,18 +200,25 @@ services:
 
   # alert
   alertmanager:
-    image: currycan/alertmanager:v0.15.2
+    image: harbor.iibu.com/base/alertmanager:v0.15.2
     volumes: 
       - /etc/localtime:/etc/localtime:ro
     configs:
       - source: alert_config
         target: /etc/prometheus/alertmanager.yml
     environment:
-      - SLACK_URL=${SLACK_URL:-https://hooks.slack.com/services/TOKEN}
-      - SLACK_CHANNEL=${SLACK_CHANNEL:-general}
+      - REPEAT=${REPEAT:-1h}
+      - RECEIVER=${RECEIVER:-wechat}
+      - CORP_ID=${CORP_ID:-xxxxx}
+      - PARTY=${PARTY:-2}
+      - AGENT_ID=${AGENT_ID:-1000002}
+      - AUTH_CODE=${AUTH_CODE:-xxxxxxxxx}
+      - EMAIL_USER=${EMAIL_USER:-zhangzhitao@fmsh.com.cn}
       - SLACK_USER=${SLACK_USER:-alertmanager}
+      - SLACK_CHANNEL=${SLACK_CHANNEL:-general}
+      - SLACK_URL=${SLACK_URL:-https://hooks.slack.com/services/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}
     command:
-      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--config.file=/etc/alertmanager/config/alertmanager.yml'
       - '--storage.path=/alertmanager'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9093/"]
@@ -171,7 +229,7 @@ services:
       - monitor
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 0
       placement:
         constraints:
           - node.role == manager
@@ -182,7 +240,7 @@ services:
           memory: 64M
 
   unsee:
-    image: currycan/unsee:v0.9.2
+    image: harbor.iibu.com/base/unsee:v0.9.2
     environment:
       - "ALERTMANAGER_URIS=default:http://alertmanager:9093"
       - "PORT=9080"
@@ -207,7 +265,7 @@ services:
 
   # dashboard
   grafana:
-    image: currycan/grafana:v5.3.1
+    image: harbor.iibu.com/base/grafana:v5.3.1
     volumes:
       - /monitor/grafana/data:/grafana/data
       - /etc/localtime:/etc/localtime:ro
@@ -236,7 +294,7 @@ services:
 
   # web authorization
   caddy:
-    image: currycan/caddy:v0.11.0
+    image: harbor.iibu.com/base/caddy:v0.11.0
     ports:
       # grafana
       - "23000:3000"
@@ -249,11 +307,15 @@ services:
       # cadvisor
       - "28080:8080"
       # unsee
-      - "29098:9080"
+      - "29080:9080"
       # pushgateway
       - "29091:9091"
       # dockerd-exporter
       - "29323:9323"
+      # redis_exporter
+      - "29121:9121"
+      # mysqld_exporter
+      - "29104:9104"
     volumes:
       - /etc/localtime:/etc/localtime:ro
     configs:
@@ -289,9 +351,11 @@ networks:
 configs:
   caddy_config:
     file: ./caddy/config/Caddyfile
+  alert_config:
+    file: ./alertmanager/config/alertmanager.yml
+  prometheus_config:
+    file: ./prometheus/config/prometheus.yml
   node_rules:
     file: ./prometheus/rules/swarm_node.rules.yml
   task_rules:
     file: ./prometheus/rules/swarm_task.rules.yml
-  alert_config:
-    file: ./alertmanager/config/alertmanager.yml

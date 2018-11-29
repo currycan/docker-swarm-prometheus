@@ -1,17 +1,11 @@
 ### 1、准备    
-    基础环境：所有机器安装docker、完成时间校准；
+    基础环境：所有机器安装docker、完成时间校准
 ---
-### 2、开放端口
+### 2、关闭防火墙
 所有机器运行
 ```
-firewall-cmd --add-port=2376/tcp --permanent
-firewall-cmd --add-port=2377/tcp --permanent
-firewall-cmd --add-port=7946/tcp --permanent
-firewall-cmd --add-port=7946/udp --permanent
-firewall-cmd --add-port=4789/udp --permanent
-firewall-cmd --zone=public --add-port=80/tcp --permanent
-firewall-cmd --reload 
-firewall-cmd --list-ports
+systemctl stop firewalld
+systemctl disable firewalld
 ```
 ---
 ### 3、创建docker swarm集群
@@ -32,13 +26,22 @@ b、所有需要监控节点运行加入监控口令，如：
 ```
 docker swarm join --token SWMTKN-1-69tr1fx5grwub5b7zi7qq4tq1crkddpurvf44kn3m57eb0w3xw-1xdagda6avqc512j88j9db70t 192.168.211.117:2377
 ```
+运行完后，可在manager节点查询节点信息：
+```
+docker node ls
+```
 c、拉取exporter镜像
-比如监控主机需要监控redis,则需要在该主机上拉“harbor.iibu.com/base/redis_exporter:v0.22.1”，具体如下：
-    manager节点：docker-compose pull
-    worker节点：
-        redis主机：docker pull harbor.iibu.com/base/redis_exporter:v0.22.1
-        mariadb主机：docker pull harbor.iibu.com/base/mysqld_exporter:v0.11.0
+所有节点都需要用到：cadvisor、node-exporter、dockerd-exporter
+ ```
+docker pull harbor.iibu.com/base/cadvisor:v0.31.0
+docker pull harbor.iibu.com/base/node-exporter:v0.16.0
+docker pull harbor.iibu.com/base/dockerd-exporter:v0.0.1
+e、修改配置
+./prometheus/config 如需要监控rabbitmq，配置其IP端口
+./docker-compose.yml 修改redis_exporter、mysqld_exporter 配置项
+ ```
 d、主节点启动服务
+在docker-compose.yml所在目录运行
 ```
 mkdir -p /monitor/grafana/data   
 mkdir -p /monitor/prometheus/data   
@@ -67,4 +70,52 @@ x88hm8yrbtpu        monitor_prometheus         replicated          1/1          
 ```
 docker stack rm monitor   
 docker container prune   
+```
+---
+### 5、相关命令
+a、更新docker-compose文件
+```
+docker stack deploy -c docker-compose.yml <swarm name>_<app_name>
+```
+b、更新config文件
+```
+docker service rm <swarm name>_<app_name>
+docker config rm <swarm name>_<config_name>
+docker stack deploy -c docker-compose.yml <swarm name>_<app_name>
+```
+c、集群节点down
+```
+# manager节点上删除该节点
+docker node rm <node_id>
+# manager节点查询加入口令
+docker swarm join-token worker/manager
+# down节点上运行加入节点口令
+docker swarm join --token <token> <manager_ip>:2377
+```
+d、集群节点添加label
+```
+docker node update --label-add <key>=<value> <node_name>
+```
+e、如何查看节点label
+```
+docker node inspect <node_name>
+```
+f、更新服务镜像版本
+```
+docker service update --image <image_name:tag> <swarm name>_<app_name>
+可以增加优化参数
+# 设定容器间更新时间间隔
+--update-delay 10s \
+# 更新时同时并行更新数量，默认1
+--update-parallelism 2 \
+# 任务容器更新失败时的模式 continue为继续使用
+--update-failure-action continue
+```
+g、回滚版本
+```
+docker service update --rollback <swarm name>_<app_name>
+可以增加优化参数
+--rollback-parallelism 2 \
+--rollback-monitor 20s \
+--rollback-max-failure-ratio .2 \
 ```
