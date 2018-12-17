@@ -14,7 +14,7 @@
                         <td>prometheus_alert</td>
                         <td>{{ .Labels.severity }}</td>
                         <td>{{ .Labels.alertname }}</td>
-                        <td>{{ .Labels.instance }}</td>
+                        <td>{{ .Labels.hostname }}:{{ .Labels.host_ip }}</td>
                         <td>{{ .Annotations.summary }}</td>
                         <td>{{ .Annotations.description }}</td>
                         <td>{{ .StartsAt.Format "2006-01-02 15:04:05" }}</td>
