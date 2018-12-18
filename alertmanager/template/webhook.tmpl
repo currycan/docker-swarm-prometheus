@@ -1,13 +1,14 @@
 {{ define "webhook.default.message" }}
 {{ range .Alerts }}
-========start==========
-告警程序：prometheus_alert
-告警级别：{{ .Labels.severity }}
-告警类型：{{ .Labels.alertname }}
-故障主机: {{ .Labels.hostname }}:{{ .Labels.host_ip }}
-告警主题: {{ .Annotations.summary }}
-告警详情: {{ .Annotations.description }}
-触发时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
-========end==========
+{
+    "alert_way": "prometheus_alert",
+    "level": "{ .Labels.severity }}",
+    "type": "{{ .Labels.alertname }}",
+    "ipPort": "{{ .Labels.hostname }}:{{ .Labels.host_ip }}",
+    "title": "{{ .Annotations.summary }}",
+    "errInfo": "{{ .Annotations.description }}",
+    "telephone": "",
+    "start_time": "{{ .StartsAt.Format '2006-01-02 15:04:05' }}"
+}
 {{ end }}
 {{ end }}
