@@ -6,8 +6,7 @@ global:
     monitor: 'promswarm'
 
 rule_files:
-  - "swarm_node.rules.yml"
-  - "swarm_task.rules.yml"
+  - /etc/prometheus/*.rules.yml
 
 alerting:
   alertmanagers:

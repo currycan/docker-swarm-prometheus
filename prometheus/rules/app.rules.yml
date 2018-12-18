@@ -1,0 +1,13 @@
+groups:
+- name: app_running
+  rules:
+  - alert: nginx_down
+    expr: avg (count (container_memory_usage_bytes{name=~"nginx"})) < 2
+    for: 1m
+    labels:
+      severity: warning
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "one of nginx is down."
+      summary: "one of nginx is down."
