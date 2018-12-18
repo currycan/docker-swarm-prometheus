@@ -167,6 +167,8 @@ services:
         target: /etc/prometheus/swarm_node.rules.yml
       - source: task_rules
         target: /etc/prometheus/swarm_task.rules.yml
+      - source: app_rules
+        target: /etc/prometheus/app.rules.yml
       - source: prometheus_config
         target: /prometheus.yml
     environment:
@@ -205,18 +207,20 @@ services:
       - /etc/localtime:/etc/localtime:ro
     configs:
       - source: alert_config
-        target: /etc/prometheus/alertmanager.yml
+        target: /alertmanager.yml
+        # target: /etc/prometheus/alertmanager.yml
     environment:
-      - REPEAT=${REPEAT:-1h}
-      - RECEIVER=${RECEIVER:-wechat}
-      - CORP_ID=${CORP_ID:-xxxxx}
+      - REPEAT=${REPEAT:-8h}
+      - PASSWORD=${PASSWORD:-}
+      - CORP_ID=${CORP_ID:-wwed369f83xxxxxxxx}
       - PARTY=${PARTY:-2}
       - AGENT_ID=${AGENT_ID:-1000002}
-      - AUTH_CODE=${AUTH_CODE:-xxxxxxxxx}
+      - AUTH_CODE=${AUTH_CODE:-hAKoT-Uxw7OzHml1xJlEt8OHnGuli_bvpCgmz-bfXOI}
       - EMAIL_USER=${EMAIL_USER:-zhangzhitao@fmsh.com.cn}
       - SLACK_USER=${SLACK_USER:-alertmanager}
       - SLACK_CHANNEL=${SLACK_CHANNEL:-general}
-      - SLACK_URL=${SLACK_URL:-https://hooks.slack.com/services/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}
+      - SLACK_URL=${SLACK_URL:-https://hooks.slack.com/services/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}
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://192.168.211.117:8082/alert/}
     command:
       - '--config.file=/etc/alertmanager/config/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -359,3 +363,5 @@ configs:
     file: ./prometheus/rules/swarm_node.rules.yml
   task_rules:
     file: ./prometheus/rules/swarm_task.rules.yml
+  app_rules:
+    file: ./prometheus/rules/app.rules.yml
