@@ -15,6 +15,7 @@ route:
   group_wait: 30s
   group_interval: 5m
   repeat_interval: '<REPEAT>'
+  receiver: 'wechat' # 报警接收者
   group_by: [alertname]
   routes:
   - match:
