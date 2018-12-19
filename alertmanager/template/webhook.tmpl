@@ -2,12 +2,12 @@
 {{ range .Alerts }}
 {
     "alert_way": "prometheus_alert",
-    "level": "{ .Labels.severity }}",
+    "level": "{{ .Labels.severity }}",
     "type": "{{ .Labels.alertname }}",
     "ipPort": "{{ .Labels.hostname }}:{{ .Labels.host_ip }}",
     "title": "{{ .Annotations.summary }}",
     "errInfo": "{{ .Annotations.description }}",
-    "telephone": "13122003236",
+    "telephone": "",
     "start_time": '{{ .StartsAt.Format "2006-01-02 15:04:05" }}'
 }
 {{ end }}
