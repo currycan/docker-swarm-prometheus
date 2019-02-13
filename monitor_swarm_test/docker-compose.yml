@@ -78,57 +78,6 @@ services:
         reservations:
           memory: 64M
 
-  redis_exporter:
-    image: harbor.iibu.com/base/redis_exporter:v0.22.1
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - REDIS_ADDR=192.168.211.168:6281,192.168.211.168:6381,192.168.211.184:6282,192.168.211.184:6382,192.168.211.199:6283,192.168.211.199:6383
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9121/metrics"]
-      interval: 5s
-      timeout: 1s
-      retries: 3
-    networks:
-      - monitor
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          # - node.labels.app == redis
-          - node.role == manager
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
-
-  mysqld_exporter:
-    image: harbor.iibu.com/base/mysqld_exporter:v0.11.0
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - DATA_SOURCE_NAME="root:gULi4zT0Pyr@ghr!@(192.168.51.101:3306)/"      
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9104/metrics"]
-      interval: 5s
-      timeout: 1s
-      retries: 3
-    networks:
-      - monitor
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-      resources:
-        limits:
-          memory: 128M
-        reservations:
-          memory: 64M
-
   # push short-lived jobs
   pushgateway:
     image: harbor.iibu.com/base/pushgateway:v0.6.0
@@ -169,10 +118,13 @@ services:
         target: /etc/prometheus/swarm_task.rules.yml
       - source: app_rules
         target: /etc/prometheus/app.rules.yml
+      - source: kibana_rules
+        target: /etc/prometheus/kibana.rules.yml
       - source: prometheus_config
         target: /prometheus.yml
     environment:
-      - exporters=prometheus node_exporter cadvisor_exporter dockerd_exporter redis_exporter mysqld_exporter pushgateway
+      #- exporters=node_exporter cadvisor_exporter dockerd_exporter redis_exporter mysqld_exporter pushgateway
+      - exporters=node_exporter cadvisor_exporter dockerd_exporter pushgateway
       - stack=monitor
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -208,6 +160,8 @@ services:
     configs:
       - source: alert_config
         target: /alertmanager.yml
+      - source: alert_kibana_tmpl
+        target: /etc/alertmanager/template/kibana.tmpl
     command:
       - '--config.file=/etc/alertmanager/config/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -220,7 +174,7 @@ services:
       - monitor
     deploy:
       mode: replicated
-      replicas: 0
+      replicas: 1
       placement:
         constraints:
           - node.role == manager
@@ -344,6 +298,8 @@ configs:
     file: ./caddy/config/Caddyfile
   alert_config:
     file: ./alertmanager/config/alertmanager.yml
+  alert_kibana_tmpl:
+    file: ./alertmanager/template/kibana.tmpl
   prometheus_config:
     file: ./prometheus/config/prometheus.yml
   node_rules:
@@ -352,3 +308,5 @@ configs:
     file: ./prometheus/rules/swarm_task.rules.yml
   app_rules:
     file: ./prometheus/rules/app.rules.yml
+  kibana_rules:
+    file: ./prometheus/rules/kibana.rules.yml

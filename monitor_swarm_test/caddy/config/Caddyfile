@@ -1,0 +1,74 @@
+:9090 {
+    proxy / prometheus:9090 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9093 {
+    proxy / alertmanager:9093 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9100 {
+    proxy / node_exporter:9100 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9323 {
+    proxy / dockerd_exporter:9323 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:8080 {
+    proxy / cadvisor_exporter:8080 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9080 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / unsee:9080 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9091 {
+    proxy / pushgateway:9091 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:3000 {
+    proxy / grafana:3000 {
+            transparent
+            websocket
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+

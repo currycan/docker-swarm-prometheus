@@ -1,0 +1,9 @@
+groups:
+- name: kibana-rules
+  rules:
+  - alert: kibana_alert
+    expr: kibana_metric{job="kibana"} >= 0
+    for: 1s
+    annotations:
+      summary: "{{$labels.subject}}"
+      description: "{{$labels.msg}}"
