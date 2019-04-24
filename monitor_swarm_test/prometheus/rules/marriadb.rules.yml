@@ -1,0 +1,150 @@
+groups:
+- name: marriadb
+  rules:
+  - alert: marriadb_boot_down
+    expr: sum by (instance ) (mysql_up {job="marriadb-node0"}) < 1
+    for: 2m
+    labels:
+      severity: critcal
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点上marriadb boot服务不可用"
+      summary: "marriadb boot服务不可以用"
+
+  - alert: marriadb_node1_down
+    expr: sum by (instance ) (mysql_up {job="marriadb-node1"}) < 1
+    for: 2m
+    labels:
+      severity: critcal
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点上marriadb node1服务不可用"
+      summary: "marriadb node1服务不可以用"
+
+  - alert: marriadb_node2_down
+    expr: sum by (instance ) (mysql_up {job="marriadb-node2"}) < 1
+    for: 2m
+    labels:
+      severity: critcal
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点上marriadb node2服务不可用"
+      summary: "marriadb node2服务不可以用"
+
+  - alert: marriadb_node3_down
+    expr: sum by (instance ) (mysql_up {job="marriadb-node3"}) < 1
+    for: 2m
+    labels:
+      severity: critcal
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点上marriadb node3服务不可用"
+      summary: "marriadb node3服务不可以用"
+
+  - alert: marriadb_max_used_connections_50%
+    expr: sum by (instance ) (mysql_global_status_max_used_connections/mysql_global_variables_max_connections {job="marriadb-node0"}) * 100 > 50
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "marriadb连接数使用占比达{{ humanize $value}}%"
+      description: "marriadb连接数使用占比超50%"
+
+  - alert: marriadb_max_used_connections_80%
+    expr: sum by (instance ) (mysql_global_status_max_used_connections/mysql_global_variables_max_connections {job="marriadb-node0"}) * 100 > 80
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "marriadb连接数使用占比达{{ humanize $value}}%"
+      description: "marriadb连接数使用占比超80%"
+
+  - alert: marriadb_status_aborted_clients
+    expr: delta (mysql_global_status_aborted_clients{job="marriadb-node0"}[10m]) > 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "marriadb 10分钟内关闭的客户端连接数达到{{ humanize $value}}条"
+      description: "marriadb 10分钟内关闭的客户端连接数超10条"
+
+  - alert: marriadb_status_aborted_clients
+    expr: delta (mysql_global_status_aborted_clients{job="marriadb-node0"}[10m]) > 50
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "marriadb 10分钟内关闭的客户端连接数达到{{ humanize $value}}条"
+      description: "marriadb 10分钟内关闭的客户端连接数超50条"
+
+  - alert: marriadb_aborted_connects
+    expr: delta (mysql_global_status_aborted_connects{job="marriadb-node0"}[10m]) > 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "marriadb 10分钟内拒绝的连接请求数达{{ humanize $value}}条"
+      description: "marriadb 10分钟内拒绝的连接请求数超10条"
+
+  - alert: marriadb_aborted_connects
+    expr: delta (mysql_global_status_aborted_connects{job="marriadb-node0"}[10m]) > 50
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "marriadb 10分钟内拒绝的连接请求数达{{ humanize $value}}条"
+      description: "marriadb 10分钟内拒绝的连接请求数超50条"
+
+  - alert: marriadb_status_slow_queries
+    expr: delta (mysql_global_status_slow_queries{job="marriadb-node0"}[10m]) > 100
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "marriadb 10分钟内慢查询数量达{{ humanize $value}}条"
+      description: "marriadb 10分钟内慢查询数量超100条"
+
+  - alert: marriadb_status_slow_queries
+    expr: delta (mysql_global_status_slow_queries{job="marriadb-node0"}[10m]) > 200
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "marriadb 10分钟内慢查询数量达{{ humanize $value}}条"
+      description: "marriadb 10分钟内慢查询数量超200条"
+
+  - alert: marriadb_status_open_files
+    expr: sum by (instance) (mysql_global_status_open_files/mysql_global_variables_open_files_limit{job="marriadb-node0"}) * 100 > 50
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "marriadb打开的文件数达占比达{{ humanize $value}}%"
+      description: "marriadb打开的文件数达50%"
+
+  - alert: marriadb_status_open_files
+    expr: sum by (instance) (mysql_global_status_open_files/mysql_global_variables_open_files_limit{job="marriadb-node0"}) * 100 > 75
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "marriadb打开的文件数占比达{{ humanize $value}}%"
+      description: "marriadb打开的文件数占比超75%"
+
+  - alert: marriadb_tmp_disk_tables
+    expr: sum by (instance) (mysql_global_status_created_tmp_disk_tables/mysql_global_status_created_tmp_tables{job="marriadb-node0"}) * 100 > 15
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "marriadb 创建临时表个数占比达{{ humanize $value}}%"
+      description: "marriadb 创建临时表个数占比达15%"
+
+  - alert: marriadb_tmp_disk_tables
+    expr: sum by (instance) (mysql_global_status_created_tmp_disk_tables/mysql_global_status_created_tmp_tables{job="marriadb-node0"}) * 100 > 25
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "marriadb 创建临时表个数占比达{{ humanize $value}}%"
+      description: "marriadb 创建临时表个数占比超25%"

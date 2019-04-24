@@ -6,29 +6,46 @@ global:
   # smtp_smarthost: 'smtp.163.com:25'
   # smtp_smarthost:'smtp.exmail.qq.com:465'
   smtp_smarthost: 'mail.fmsh.com.cn:25'
-  smtp_from: 'fmshiotbuild@fmsh.com.cn'
-  smtp_auth_username: 'fmshiotbuild'
-  smtp_auth_password: 'fmshiot112233'
+  smtp_from: 'xxxxxxxxx@fmsh.com.cn'
+  smtp_auth_username: 'xxxxxxxx'
+  smtp_auth_password: 'xxxxxxxx'
   smtp_require_tls: false
 
 route:
   group_wait: 30s
   group_interval: 5m
   repeat_interval: '8h'
-  receiver: 'wechat' # 报警接收者
+  receiver: 'wechat_platform_system' # 报警接收者
   group_by: [alertname, instance]
   routes:
   - match:
       source: kibana_system
-    receiver: wechat_kibana_system
+    receiver: wechat_platform_system
     repeat_interval: 99999h
   - match:
       source: kibana_business
     receiver: wechat_kibana_business
-    repeat_interval: 99999h 
+    repeat_interval: 99999h
+    continue: true
+  - match:
+      kibana_telephone: true
+    receiver: webhook_kibana
+    repeat_interval: 99999h
   - match:
       severity: critical
-    receiver: webhook
+    receiver: wechat_platform_system
+    continue: true
+  - match:
+      severity: critical
+    receiver: phone_platform_system
+    continue: true
+  - match:
+      severity: critical
+    receiver: e-mail
+  - match:
+      severity: warning
+    receiver: wechat_platform_system
+    continue: true
   - match:
       severity: warning
     receiver: e-mail
@@ -40,47 +57,45 @@ templates:
   - '/etc/alertmanager/template/*.tmpl'
 
 receivers:
-  - name: 'wechat'
+  - name: 'wechat_platform_system'
     wechat_configs:
-    - send_resolved: true
-      corp_id: 'wwc0b3d945db63e185'
+    - send_resolved: false
+      corp_id: 'wwed369f83bac8cc64'
       to_party: '2'
       agent_id: '1000002'
-      api_secret: '1iIJN00eqdl_pmBc6rafy_vs9Zqr1v0vvQJT14IMD7A'
-      message: '{{ template "wechat.default.message" . }}'
-
-  - name: 'wechat_kibana_system'
-    wechat_configs:
-    - corp_id: 'wwc0b3d945db63e185'
-      to_party: '2'
-      agent_id: '1000002'
-      api_secret: '1iIJN00eqdl_pmBc6rafy_vs9Zqr1v0vvQJT14IMD7A'
-      message: '{{ template "kibana.system.message" . }}'
-      
+      api_secret: 'xxxxx-Uxw7OzHml1xJlEt8OHnGulS_bvpCgmz-bfXOI'
+      message: '{{ template "platform.system.message" . }}'
+         
   - name: 'wechat_kibana_business'
     wechat_configs:
-    - corp_id: 'wwc0b3d945db63e185'
+    - send_resolved: false
+      corp_id: 'wwed369f83bac8cc64'
       to_party: '2'
       agent_id: '1000002'
-      api_secret: '1iIJN00eqdl_pmBc6rafy_vs9Zqr1v0vvQJT14IMD7A'
+      api_secret: 'hAKoT-Uxw7OzHml1xJlEt8OHnGulS_bvpCgmz-bfXOI'
       message: '{{ template "kibana.business.message" . }}'
       
   - name: 'e-mail'
     email_configs:
-    - send_resolved: true
-      to: 'zhangzhitao@fmsh.com.cn'
+    - send_resolved: false
+      to: 'nfcos_som@fmsh.com.cn,nfcosoms@fmsh.com.cn'
       html: '{{ template "email.default.html" . }}'
       headers: { Subject: " {{ .CommonAnnotations.summary }} " }
 
   - name: 'slack'
     slack_configs:
-      - send_resolved: true
+      - send_resolved: false
         text: "{{ .CommonAnnotations.description }}"
         username: 'alertmanager'
         channel: 'general'
-        api_url: 'https://hooks.slack.com/services/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'
-
-  - name: 'webhook'
+        api_url: 'https://hooks.slack.com/services/xxxxxxxxxx/BDQMHTQ85/GpyF83O8cbwayObsIGF2LjR6'
+        
+  - name: 'webhook_kibana'
     webhook_configs:
-      - url: 'http://192.168.211.117:8082/alert/'
-        send_resolved: true
+    - send_resolved: false
+      url: 'http://192.168.1.1:19393/api/alert/kibana'
+
+  - name: 'phone_platform_system'
+    webhook_configs:
+    - send_resolved: false
+      url: 'http://192.168.1.1:19393/api/alert/prometheus'

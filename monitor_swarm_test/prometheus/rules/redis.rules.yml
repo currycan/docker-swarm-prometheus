@@ -1,0 +1,98 @@
+groups:
+- name: redis_alert
+  rules:
+  - alert: redis_cluster_size
+    expr: redis_cluster_size != 3
+    for: 2m
+    labels:
+      severity: critical 
+    annotations:
+      description: "redis集群master节点异常,当前master节点个数{{ humanize $value}}"
+      summary: "redis集群master节点异常"
+
+  - alert: redis_cluster_known_nodes
+    expr: sum (redis_cluster_state{hostname=~".+"}) < 6
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      description: "redis集群节点数小于6，当前节点数{{ humanize $value}}"
+      summary: "redis集群节点数小于6"
+
+  - alert: redis_cluster_current_epoch
+    expr: delta (redis_cluster_current_epoch[1h]) > 1
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      description: "redis集群集群当前的纪元异常预警,当前个数{{ humanize $value}}"
+      summary: "redis集群集群当前的纪元异常预警"
+
+  - alert: redis_cluster_current_epoch
+    expr: delta (redis_cluster_current_epoch[1h]) > 5
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      description: "redis集群集群当前的纪元异常，当前个数{{ humanize $value}}"
+      summary: "redis集群集群当前的纪元异常"
+
+  - alert: redis_connected_clients
+    expr: redis_connected_clients > 12345
+    for: 2m
+    labels:
+      severity: warning
+      host_ip: '{{ $labels.addr }}'
+    annotations:
+      description: "redis集群客户端连接大于12345, 当前{{ $labels.host_ip }}主机上redis连接数{{ humanize $value}}"
+      summary: "redis集群客户端连接大于12345"
+
+  - alert: redis_connected_clients
+    expr: redis_connected_clients > 23456
+    for: 2m
+    labels:
+      severity: critical
+      host_ip: '{{ $labels.addr }}'
+    annotations:
+      description: "redis集群客户端连接大于23456, 当前{{ $labels.host_ip }}主机上redis连接数{{ humanize $value}}"
+      summary: "redis集群客户端连接大于23456"
+
+  - alert: redis_aof_pending_bio_fsync
+    expr: redis_aof_pending_bio_fsync > 10
+    for: 2m
+    labels:
+      severity: warning
+      host_ip: '{{ $labels.addr }}'
+    annotations:
+      description: "redis集群后台 I/O 队列中等待fsync的任务数量大于10, 当前{{ $labels.host_ip }}主机上redis等待fsync的任务数{{ humanize $value}}"
+      summary: "redis集群后台 I/O 队列中等待fsync的任务数量大于10"
+
+  - alert: redis_aof_pending_bio_fsync
+    expr: redis_aof_pending_bio_fsync > 50
+    for: 2m
+    labels:
+      severity: critical
+      host_ip: '{{ $labels.addr }}'
+    annotations:
+      description: "redis集群后台 I/O 队列中等待fsync的任务数量大于50, 当前{{ $labels.host_ip }}主机上redis等待fsync的任务数数{{ humanize $value}}"
+      summary: "redis集群后台 I/O 队列中等待fsync的任务数量大于50"
+
+  - alert: redis_slowlog_length
+    expr: delta(redis_slowlog_length[4h]) > 5
+    for: 2m
+    labels:
+      severity: warning
+      host_ip: '{{ $labels.addr }}'
+    annotations:
+      description: "redis集群慢日志长度大于5, 当前{{ $labels.host_ip }}主机上redis集群慢日志长度{{ humanize $value}}"
+      summary: "redis集群慢日志长度大于5"
+
+  - alert: redis_slowlog_length
+    expr: delta(redis_slowlog_length[4h]) > 50
+    for: 2m
+    labels:
+      severity: critical
+      host_ip: '{{ $labels.addr }}'
+    annotations:
+      description: "redis集群慢日志长度大于50, 当前{{ $labels.host_ip }}主机上redis集群慢日志长度{{ humanize $value}}"
+      summary: "redis集群慢日志长度大于50"

@@ -1,13 +1,24 @@
 groups:
-- name: app_running
+- name: app_alert
   rules:
-  - alert: nginx_down
-    expr: avg (count (container_memory_usage_bytes{name=~"nginx"})) < 0
-    for: 1m
+  - alert: container_high_cpu_usage_200%
+    expr: sum(rate(container_cpu_usage_seconds_total{container_label_com_docker_swarm_node_id="", image!=""}[5m])) by (hostname, host_ip, name) * 100 > 200
+    for: 2m
     labels:
       severity: warning
       hostname: '{{ $labels.hostname }}'
       host_ip: '{{ $labels.host_ip }}'
     annotations:
-      description: "one of nginx is down."
-      summary: "one of nginx is down."
+      description: "主机{{ $labels.hostname }}, IP: {{ $labels.host_ip }} 上的服务: {{ $labels.name }} CPU 单核使用率达{{ humanize $value}}%."
+      summary: "{{ $labels.host_ip }}主机上的服务{{ $labels.name }}CPU使用超标"
+
+  - alert: container_high_memory_usage_1.3g
+    expr: sum by(hostname, host_ip, name) (container_memory_rss{container_label_com_docker_swarm_node_id="",image!="",hostname =~ "app.+"}) > 1.3e+09
+    for: 2m
+    labels:
+      severity: warning
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "'主机{{ $labels.hostname }}, IP: {{ $labels.host_ip }} 上的服务: {{ $labels.name }} 内存使用率达{{ humanize $value}}."
+      summary: "{{ $labels.host_ip }}主机上的服务{{ $labels.hostname }}内存使用超1.3g"

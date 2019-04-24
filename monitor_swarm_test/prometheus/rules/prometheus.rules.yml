@@ -1,0 +1,42 @@
+groups:
+- name: prometheus_alert
+  rules:
+  - alert: prometheus_prod_status
+    expr: sum by (instance) (prometheus_build_info{instance="192.168.210.190"}) < 1
+    for: 5m
+    labels:
+      severity: critical
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      summary: "主机房prometheus, IP: {{ $labels.host_ip }}服务不可用!"
+      description: "主机房prometheus服务不可用"
+
+  - alert: prometheus_stagging_status
+    expr: sum by (instance) (prometheus_build_info{instance="192.168.211.117"}) < 1
+    for: 5m
+    labels:
+      severity: critical
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      summary: "备机房prometheus, IP: {{ $labels.host_ip }}服务不可用!"
+      description: "备机房prometheus服务不可用"
+
+  - alert: prometheus_prod_down
+    expr: avg by (instance) (count by (instance)(container_memory_usage_bytes{job="prometheus_container_prod", id="/"}))  < 1
+    for: 5m
+    labels:
+      severity: 'critical'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "生产主机房prometheus, IP:{{ $labels.host_ip }}服务不可用!"
+      summary: "生产主机房prometheus服务不可用"
+
+  - alert: prometheus_stag_down
+    expr: avg by (instance) (count by (instance)(container_memory_usage_bytes{job="prometheus_container_stag", id="/"})) < 1
+    for: 5m
+    labels:
+      severity: 'critical'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "备机房prometheus, IP:{{ $labels.host_ip }}服务不可用！"
+      summary: "备机房prometheus服务不可用"

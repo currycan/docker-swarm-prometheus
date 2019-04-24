@@ -1,0 +1,9 @@
+groups:
+- name: svn-rules
+  rules:
+  - alert: svn_alert
+    expr: svn_metric{job="svncheck"} == 0
+    for: 1s
+    annotations:
+      summary: "{{$labels.subject}}"
+      description: "{{$labels.msg}}"

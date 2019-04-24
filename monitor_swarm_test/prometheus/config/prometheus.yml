@@ -30,15 +30,10 @@ scrape_configs:
       - files:
           - /etc/prometheus/dockerd_exporter/*.json
 
-  # - job_name: 'redis_exporter'
-  #   file_sd_configs:
-  #     - files:
-  #         - /etc/prometheus/redis_exporter/*.json
-
-  # - job_name: 'mysqld_exporter'
-  #   file_sd_configs:
-  #     - files:
-  #         - /etc/prometheus/mysqld_exporter/*.json
+  - job_name: 'redis_exporter'
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/redis_exporter/*.json
 
   - job_name: 'pushgateway'
     honor_labels: true
@@ -46,37 +41,92 @@ scrape_configs:
       - files:
           - /etc/prometheus/pushgateway/*.json
 
-  - job_name: 'prometheus'
+  - job_name: 'prometheus_container_prod'
     static_configs:
-      - targets: ['192.168.43.203:29090']
+      - targets: ['192.168.210.190:28080']
         labels:
-          instance: 192.168.43.203
+          instance: 192.168.210.190
           exporter: prometheus
 
-  # - job_name: 'rabbitmq-node0'
-  #   metrics_path: /api/metrics
-  #   static_configs:
-  #     - targets: ['192.168.210.53:15672']
-  #       labels:
-  #         instance: 192.168.210.53
-  #         exporter: rabbitmq
+  - job_name: 'prometheus_container_stag'
+    static_configs:
+      - targets: ['192.168.211.117:28080']
+        labels:
+          instance: 192.168.211.117
+          exporter: prometheus
 
-  # - job_name: 'rabbitmq-node1'
-  #   metrics_path: /api/metrics
-  #   static_configs:
-  #     - targets: ['192.168.210.61:15672']
-  #       labels:
-  #         instance: 192.168.210.61
-  #         exporter: rabbitmq
+  - job_name: 'prometheus_prod'
+    static_configs:
+      - targets: ['192.168.210.190:29090']
+        labels:
+          instance: 192.168.210.190
+          exporter: prometheus
 
-  # - job_name: 'rabbitmq-node2'
-  #   metrics_path: /api/metrics
-  #   static_configs:
-  #     - targets: ['192.168.210.147:15672']
-  #       labels:
-  #         instance: 192.168.210.147
-  #         exporter: rabbitmq
+  - job_name: 'prometheus_stag'
+    static_configs:
+      - targets: ['192.168.211.117:29090']
+        labels:
+          instance: 192.168.211.117
+          exporter: prometheus
 
+  - job_name: 'marriadb-node0'
+    static_configs:
+      - targets: ['192.168.210.190:29104']
+        labels:
+          instance: 192.168.50.54
+          exporter: marriadb
+
+  - job_name: 'marriadb-node1'
+    static_configs:
+      - targets: ['192.168.210.190:29105']
+        labels:
+          instance: 192.168.50.1
+          exporter: marriadb
+
+  - job_name: 'marriadb-node2'
+    static_configs:
+      - targets: ['192.168.210.190:29106']
+        labels:
+          instance: 192.168.50.2
+          exporter: marriadb
+
+  - job_name: 'marriadb-node3'
+    static_configs:
+      - targets: ['192.168.210.190:29107']
+        labels:
+          instance: 192.168.50.3
+          exporter: marriadb
+
+  - job_name: 'rabbitmq-node0'
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['192.168.210.1:15672']
+        labels:
+          instance: 192.168.210.1
+          exporter: rabbitmq
+
+  - job_name: 'rabbitmq-node1'
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['192.168.210.2:15672']
+        labels:
+          instance: 192.168.210.2
+          exporter: rabbitmq
+
+  - job_name: 'rabbitmq-node2'
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['192.168.210.3:15672']
+        labels:
+          instance: 192.168.210.3
+          exporter: rabbitmq
+
+  - job_name: 'rabbitmq-exporter-node0'
+    static_configs:
+      - targets: ['192.168.210.190:19419']
+        labels:
+          instance: 192.168.210.190
+          exporter: rabbitmq-exporter
   # - job_name: 'dockerd-exporter'
   #   dns_sd_configs:
   #   - names:

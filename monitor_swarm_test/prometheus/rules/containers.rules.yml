@@ -1,0 +1,13 @@
+groups:
+- name: containers_monitor
+  rules:
+  - alert: rabbitmq_node0_down
+    expr: avg by (host_ip, hostname) (count by (host_ip, hostname)(container_memory_usage_bytes{name="rmqha_node0"})) < 1
+    for: 2m
+    labels:
+      severity: 'critical'
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点, hostname: {{ $labels.hostname }}, rabbitmq服务不可用！"
+      summary: "rabbitmq node0服务不可用"

@@ -1,0 +1,53 @@
+groups:
+- name: rabbitmq_running
+  rules:
+  - alert: rabbitmq_node0_down
+    expr: rabbitmq_node_up{job="rabbitmq-node0",name="rabbit@rmqha_node0"} < 1
+    for: 2m
+    labels:
+      severity: critcal
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点rabbitmq服务不可用！"
+      summary: "rabbitmq服务不可用"
+
+  - alert: rabbitmq_node1_down
+    expr: rabbitmq_node_up{job="rabbitmq-node1",name="rabbit@rmqha_node1"} < 1
+    for: 2m
+    labels:
+      severity: critcal
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点rabbitmq服务不可用！"
+      summary: "rabbitmq服务不可用"
+
+  - alert: rabbitmq_node2_down
+    expr: rabbitmq_node_up{job="rabbitmq-node2",name="rabbit@rmqha_node2"} < 1
+    for: 2m
+    labels:
+      severity: critcal
+      host_ip: '{{ $labels.instance }}'
+    annotations:
+      description: "{{ $labels.host_ip }}节点rabbitmq服务不可用！"
+      summary: "rabbitmq服务不可用"
+
+  - alert: rabbitmq_messages_ready
+    expr: sum by (vhost,queue) (rabbitmq_queue_messages_ready{job="rabbitmq-node0", queue != "FM.dx.candy.batch.uploadData"}) > 2000
+    for: 30s
+    labels:
+      severity: warning
+      vhost: '{{ $labels.vhost }}'
+      queue: '{{ $labels.queue }}'
+    annotations:
+      description: "在{{ $labels.vhost }}中的队列{{ $labels.queue }}超过{{ humanize $value}}条消息没有被消费"
+      summary: "rabbitmq消息超2000条消息没有被消费."
+  
+  - alert: rabbitmq_partition
+    expr: sum by (cluster) (rabbitmq_partitions{job="rabbitmq-exporter-node0"}) > 0
+    for: 30s
+    labels:
+      severity: warning
+    annotations:
+      description: "主机房rabbitmq集群脑裂"
+      summary: "主机房rabbitmq集群脑裂"
+

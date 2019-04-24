@@ -1,0 +1,79 @@
+groups:
+- name: node_alert
+  rules:
+  - alert: node_cpu_usage_85%
+    expr: 100 - avg (irate(node_cpu_seconds_total{mode="idle"}[5m]))  by (hostname, host_ip) * 100 > 80
+    for: 2m
+    labels:
+      severity: critical
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "主机{{ $labels.host_ip }}, hostname: {{ $labels.hostname }} CPU 使用量达: {{ humanize $value}}%."
+      summary: "主机{{ $labels.host_ip }}CPU使用超80%"
+
+  - alert: node_memory_usage_85%
+    expr: sum by (hostname, host_ip) ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) *100 > 85
+    for: 2m
+    labels:
+      severity: critical
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "主机{{ $labels.host_ip }}, hostname: {{ $labels.hostname }} 内存使用量达: {{ humanize $value}}%."
+      summary: "主机{{ $labels.host_ip }}内存使用超85%"
+
+  - alert: node_disk_usage_85%
+    expr: ((node_filesystem_size_bytes{device=~"^/dev/.*$"} - node_filesystem_free_bytes{device=~"^/dev/.*$"}) * 100 / node_filesystem_size_bytes{device=~"^/dev/.*$"}) > 85
+    for: 2m
+    labels:
+      severity: critical
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "主机{{ $labels.host_ip }}, hostname: {{ $labels.hostname }} 磁盘使用量达: {{ humanize $value}}%."
+      summary: "主机{{ $labels.host_ip }}磁盘使用超85%"
+
+  - alert: node_cpu_usage_60%
+    expr: 100 - avg (irate(node_cpu_seconds_total{mode="idle"}[5m]))  by (hostname, host_ip) * 100 > 60
+    for: 2m
+    labels:
+      severity: warning
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "主机{{ $labels.host_ip }}, hostname: {{ $labels.hostname }} CPU 使用量达: {{ humanize $value}}%."
+      summary: "主机{{ $labels.host_ip }}CPU使用超标预警"
+
+  - alert: node_memory_usage_70%
+    expr: sum by (hostname, host_ip) ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) *100 > 70
+    for: 2m
+    labels:
+      severity: warning
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "主机{{ $labels.host_ip }}, hostname: {{ $labels.hostname }} 内存使用量达: {{ humanize $value}}%."
+      summary: "主机{{ $labels.host_ip }}内存超标预警"
+
+  - alert: node_disk_usage_70%
+    expr: ((node_filesystem_size_bytes{device=~"^/dev/.*$"} - node_filesystem_free_bytes{device=~"^/dev/.*$"}) * 100 / node_filesystem_size_bytes{device=~"^/dev/.*$"}) > 70
+    for: 2m
+    labels:
+      severity: warning
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "主机{{ $labels.host_ip }}, hostname: {{ $labels.hostname }} 磁盘使用量达: {{ humanize $value}}%."
+      summary: "主机{{ $labels.host_ip }}磁盘使用超标预警"
+
+  - alert: node_disk_fill_rate_8h
+    expr: predict_linear(node_filesystem_free_bytes{device=~"^/dev/.*$"}[1h], 8 * 3600) < 0
+    for: 2m
+    labels:
+      severity: critical
+      hostname: '{{ $labels.hostname }}'
+      host_ip: '{{ $labels.host_ip }}'
+    annotations:
+      description: "主机{{ $labels.host_ip }}, hostname: {{ $labels.hostname }}磁盘空间将在8小时后耗尽"
+      summary: "主机{{ $labels.host_ip }}磁盘使用速率超标"

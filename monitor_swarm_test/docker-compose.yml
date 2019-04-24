@@ -78,6 +78,173 @@ services:
         reservations:
           memory: 64M
 
+  redis_exporter:
+    image: harbor.iibu.com/base/redis_exporter:v0.22.1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - REDIS_ADDR=192.168.50.21:6981,192.168.50.24:6981,192.168.50.25:6981,192.168.50.68:6981,192.168.50.171:6981,192.168.50.192:6981
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9121/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          # - node.labels.app == redis
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  mysqld_exporter0:
+    image: harbor.iibu.com/base/mysqld_exporter:v0.11.0
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DATA_SOURCE_NAME=exporter:HfOu23LCymB8np2Vt4qf@(192.168.50.54:3306)/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9104/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    ports:
+      - "29104:9104"
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          # - node.labels.app == marriadb
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  mysqld_exporter1:
+    image: harbor.iibu.com/base/mysqld_exporter:v0.11.0
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DATA_SOURCE_NAME=exporter:HfOu23LCymB8np2Vt4qf@(192.168.50.149:3306)/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9104/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    ports:
+      - "29105:9104"
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          # - node.labels.app == marriadb
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  mysqld_exporter2:
+    image: harbor.iibu.com/base/mysqld_exporter:v0.11.0
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DATA_SOURCE_NAME=exporter:HfOu23LCymB8np2Vt4qf@(192.168.50.62:3306)/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9104/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    ports:
+      - "29106:9104"
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          # - node.labels.app == marriadb
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  mysqld_exporter3:
+    image: harbor.iibu.com/base/mysqld_exporter:v0.11.0
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DATA_SOURCE_NAME=exporter:HfOu23LCymB8np2Vt4qf@(192.168.50.174:3306)/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9104/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    ports:
+      - "29107:9104"
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          # - node.labels.app == marriadb
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  rabbitmq_exporter:
+    image: harbor.iibu.com/base/rabbitmq-exporter:v1.0.0
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - RABBIT_USER=user
+      - RABBIT_PASSWORD=password
+      - RABBIT_URL=http://192.168.210.53:15672
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9419/metrics"]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+    ports:
+      - "19419:9419"
+    networks:
+      - monitor
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
   # push short-lived jobs
   pushgateway:
     image: harbor.iibu.com/base/pushgateway:v0.6.0
@@ -109,22 +276,32 @@ services:
     user: root
     volumes:
       - /monitor/prometheus/data:/prometheus
+      - /monitor/prometheus/config:/etc/prometheus
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     configs:
-      - source: node_rules
-        target: /etc/prometheus/swarm_node.rules.yml
-      - source: task_rules
-        target: /etc/prometheus/swarm_task.rules.yml
-      - source: app_rules
-        target: /etc/prometheus/app.rules.yml
-      - source: kibana_rules
-        target: /etc/prometheus/kibana.rules.yml
       - source: prometheus_config
         target: /prometheus.yml
+      - source: app_rules
+        target: /etc/prometheus/app.rules.yml
+      - source: containers_rules
+        target: /etc/prometheus/containers.rules.yml
+      - source: kibana_rules
+        target: /etc/prometheus/kibana.rules.yml
+      - source: marriadb_rules
+        target: /etc/prometheus/marriadb.rules.yml
+      - source: node_rules
+        target: /etc/prometheus/node.rules.yml
+      - source: prometheus_rules
+        target: /etc/prometheus/prometheus.rules.yml
+      - source: rabbitmq_rules
+        target: /etc/prometheus/rabbitmq.rules.yml
+      - source: redis_rules
+        target: /etc/prometheus/redis.rules.yml
+      - source: svn_rules
+        target: /etc/prometheus/svn.rules.yml
     environment:
-      #- exporters=node_exporter cadvisor_exporter dockerd_exporter redis_exporter mysqld_exporter pushgateway
-      - exporters=node_exporter cadvisor_exporter dockerd_exporter pushgateway
+      - exporters=node_exporter cadvisor_exporter dockerd_exporter redis_exporter pushgateway
       - stack=monitor
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -135,8 +312,8 @@ services:
       - '--web.enable-lifecycle'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9090/metrics"]
-      interval: 5s
-      timeout: 1s
+      interval: 60s
+      timeout: 10s
       retries: 3
     networks:
       - monitor
@@ -160,11 +337,12 @@ services:
     configs:
       - source: alert_config
         target: /alertmanager.yml
-      - source: alert_kibana_tmpl
-        target: /etc/alertmanager/template/kibana.tmpl
+      - source: alert_all_tmpl
+        target: /etc/alertmanager/template/all.tmpl
     command:
       - '--config.file=/etc/alertmanager/config/alertmanager.yml'
       - '--storage.path=/alertmanager'
+      - '--data.retention=9999h'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9093/"]
       interval: 5s
@@ -259,8 +437,6 @@ services:
       - "29323:9323"
       # redis_exporter
       - "29121:9121"
-      # mysqld_exporter
-      - "29104:9104"
     volumes:
       - /etc/localtime:/etc/localtime:ro
     configs:
@@ -298,15 +474,25 @@ configs:
     file: ./caddy/config/Caddyfile
   alert_config:
     file: ./alertmanager/config/alertmanager.yml
-  alert_kibana_tmpl:
-    file: ./alertmanager/template/kibana.tmpl
+  alert_all_tmpl:
+    file: ./alertmanager/template/all.tmpl
   prometheus_config:
     file: ./prometheus/config/prometheus.yml
-  node_rules:
-    file: ./prometheus/rules/swarm_node.rules.yml
-  task_rules:
-    file: ./prometheus/rules/swarm_task.rules.yml
   app_rules:
     file: ./prometheus/rules/app.rules.yml
+  containers_rules:
+    file: ./prometheus/rules/containers.rules.yml
   kibana_rules:
     file: ./prometheus/rules/kibana.rules.yml
+  marriadb_rules:
+    file: ./prometheus/rules/marriadb.rules.yml
+  node_rules:
+    file: ./prometheus/rules/node.rules.yml
+  prometheus_rules:
+    file: ./prometheus/rules/prometheus.rules.yml
+  rabbitmq_rules:
+    file: ./prometheus/rules/rabbitmq.rules.yml
+  redis_rules:
+    file: ./prometheus/rules/redis.rules.yml
+  svn_rules:
+    file: ./prometheus/rules/svn.rules.yml

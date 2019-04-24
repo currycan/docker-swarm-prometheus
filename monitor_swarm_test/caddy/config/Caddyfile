@@ -43,6 +43,24 @@
     tls off
 }
 
+:9121 {
+    proxy / redis_exporter:9121 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
+:9104 {
+    proxy / mysqld_exporter:9104 {
+            transparent
+        }
+    log stdout
+    errors stderr
+    tls off
+}
+
 :9080 {
     basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
     proxy / unsee:9080 {
